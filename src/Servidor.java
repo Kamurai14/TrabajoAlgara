@@ -7,7 +7,6 @@ import java.net.Socket;
 import java.util.*;
 
 public class Servidor {
-
     private static final String ARCHIVO_USUARIOS = "usuarios.txt";
     private static final String ARCHIVO_MENSAJES = "mensajes.txt";
 
@@ -28,7 +27,6 @@ public class Servidor {
         }
     }
 
-}
 private static void menu(Socket cliente) {
     try (
             PrintWriter escritor = new PrintWriter(cliente.getOutputStream(), true);
@@ -178,3 +176,61 @@ private static void mostrarUsuariosRegistrados(PrintWriter escritor) {
     }
     escritor.println("FIN_USUARIOS");
 }
+    private static void enviarMensaje(String remitente, BufferedReader lector, PrintWriter escritor) throws IOException {
+        escritor.println("¿Para quién es el mensaje? (nombre de usuario)");
+        String destinatario = lector.readLine();
+        if (destinatario == null) return;
+
+        if (destinatario.equals(remitente)) {
+            escritor.println("Error: No puedes enviarte un mensaje a ti mismo.");
+            return;
+        }
+        if (!verificarUsuarioExiste(destinatario)) {
+            escritor.println("Error: El usuario '" + destinatario + "' no existe.");
+            return;
+        }
+
+        escritor.println("Escribe tu mensaje:");
+        String mensaje = lector.readLine();
+        if (mensaje == null) return;
+
+        synchronized (Servidor.class) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_MENSAJES, true))) {
+                writer.write(destinatario + ":" + remitente + ":" + mensaje); // Formato: destinatario:remitente:mensaje
+                writer.newLine();
+                escritor.println("Mensaje enviado exitosamente a " + destinatario);
+            } catch (IOException e) {
+                escritor.println("Error al guardar el mensaje.");
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    private static void leerMensajes(String usuario, PrintWriter escritor) {
+        escritor.println("---MENSAJES---");
+        File archivo = new File(ARCHIVO_MENSAJES);
+        if (!archivo.exists()) {
+            escritor.println("No tienes mensajes.");
+        } else {
+            try (BufferedReader reader = new BufferedReader(new FileReader(archivo))) {
+                String linea;
+                int contador = 0;
+                while ((linea = reader.readLine()) != null) {
+                    String[] partes = linea.split(":", 3);
+                    if (partes.length == 3 && partes[0].equals(usuario)) {
+                        escritor.println("De [" + partes[1] + "]: " + partes[2]);
+                        contador++;
+                    }
+                }
+                if (contador == 0) {
+                    escritor.println("No tienes mensajes nuevos.");
+                }
+            } catch (IOException e) {
+                escritor.println("Error al leer los mensajes.");
+            }
+        }
+        escritor.println("FIN_MENSAJES");
+    }
+}
+
