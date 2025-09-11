@@ -110,3 +110,71 @@ private static void menu(Socket cliente) {
         }
     }
 }
+private static boolean validPassword(String contrasena) {
+    return contrasena != null && !contrasena.trim().isEmpty() && contrasena.length() >= 8;
+}
+private static boolean verificarUsuarioExiste(String usuario) throws IOException {
+    File archivo = new File(ARCHIVO_USUARIOS);
+    if (!archivo.exists()) return false;
+
+    try (BufferedReader lector = new BufferedReader(new FileReader(archivo))) {
+        String linea;
+        while ((linea = lector.readLine()) != null) {
+            String[] partes = linea.split(":");
+            if (partes.length > 0 && partes[0].equals(usuario)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+private static boolean verificarCredenciales(String usuario, String contrasena) throws IOException {
+    File archivo = new File(ARCHIVO_USUARIOS);
+    if (!archivo.exists()) return false;
+
+    try (BufferedReader lector = new BufferedReader(new FileReader(archivo))) {
+        String linea;
+        while ((linea = lector.readLine()) != null) {
+            String[] partes = linea.split(":");
+            if (partes.length == 2 && partes[0].equals(usuario) && partes[1].equals(contrasena)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+private static boolean registrarUsuario(String usuario, String contrasena) throws IOException {
+    synchronized (Servidor.class) {
+        if (verificarUsuarioExiste(usuario)) {
+            return false;
+        }
+        try (BufferedWriter escritor = new BufferedWriter(new FileWriter(ARCHIVO_USUARIOS, true))) {
+            escritor.write(usuario + ":" + contrasena);
+            escritor.newLine();
+            return true;
+        }
+    }
+}
+
+private static void mostrarUsuariosRegistrados(PrintWriter escritor) {
+    File archivo = new File(ARCHIVO_USUARIOS);
+    escritor.println("--- Usuarios Registrados ---");
+    if (!archivo.exists()) {
+        escritor.println("No hay usuarios registrados.");
+    } else {
+        try (BufferedReader lector = new BufferedReader(new FileReader(archivo))) {
+            String linea;
+            while ((linea = lector.readLine()) != null) {
+                String[] partes = linea.split(":");
+                if (partes.length >= 1) {
+                    escritor.println("- " + partes[0]);
+                }
+            }
+        } catch (IOException e) {
+            escritor.println("Error al leer usuarios.");
+        }
+    }
+    escritor.println("FIN_USUARIOS");
+}
