@@ -35,7 +35,7 @@ private static void menu(Socket cliente) {
         escritor.println("Bienvenido. ¿Deseas [1] Iniciar sesión, [2] Registrarte o [3] Ver usuarios registrados?");
         String opcion = lector.readLine();
 
-        String usuarioAutenticado = null; // Guarda el nombre del usuario que inició sesión
+        String usuarioAutenticado = null;
 
         if ("3".equals(opcion)) {
             mostrarUsuariosRegistrados(escritor);
@@ -108,6 +108,32 @@ private static void menu(Socket cliente) {
         }
     }
 }
+
+    private static void borrarMensaje(String usuario, BufferedReader lector, PrintWriter escritor) throws IOException {
+        List<String> mensajesDelUsuario = new ArrayList<>();
+        List<String> otrosMensajes = new ArrayList<>();
+        File archivo = new File(ARCHIVO_MENSAJES);
+
+        if (archivo.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(archivo))) {
+                String linea;
+                while ((linea = reader.readLine()) != null) {
+                    String[] partes = linea.split(":", 3);
+                    if (partes.length == 3 && partes[0].equals(usuario)) {
+                        mensajesDelUsuario.add(linea);
+                    } else {
+                        otrosMensajes.add(linea);
+                    }
+                }
+            }
+        }
+        if (mensajesDelUsuario.isEmpty()) {
+            escritor.println("No tienes mensajes para borrar.");
+            return;
+        }
+
+    }
+
 private static boolean validPassword(String contrasena) {
     return contrasena != null && !contrasena.trim().isEmpty() && contrasena.length() >= 8;
 }
@@ -232,5 +258,6 @@ private static void mostrarUsuariosRegistrados(PrintWriter escritor) {
         }
         escritor.println("FIN_MENSAJES");
     }
+
 }
 
