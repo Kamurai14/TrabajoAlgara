@@ -131,6 +131,12 @@ private static void menu(Socket cliente) {
             escritor.println("No tienes mensajes para borrar.");
             return;
         }
+        escritor.println("--- Elige que mensaje quieres borrar ---");
+        for (int i = 0; i < mensajesDelUsuario.size(); i++) {
+            String[] partes = mensajesDelUsuario.get(i).split(":", 3);
+            escritor.println((i + 1) + ". De [" + partes[1] + "]: " + partes[2]);
+        }
+        escritor.println("FIN_LISTA_BORRAR");
 
     }
 
