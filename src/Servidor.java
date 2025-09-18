@@ -87,6 +87,9 @@ private static void menu(Socket cliente) {
                     leerMensajes(usuarioAutenticado, escritor);
                     break;
                 case "3":
+                    borrarMensaje(usuarioAutenticado, lector, escritor);
+                    break;
+                case "4":
                     System.out.println("Cliente " + usuarioAutenticado + " ha cerrado sesión.");
                     cliente.close();
                     return;
