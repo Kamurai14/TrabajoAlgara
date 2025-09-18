@@ -138,6 +138,33 @@ private static void menu(Socket cliente) {
         }
         escritor.println("FIN_LISTA_BORRAR");
 
+        String seleccionStr = lector.readLine();
+        try {
+            int seleccion = Integer.parseInt(seleccionStr);
+            if (seleccion > 0 && seleccion <= mensajesDelUsuario.size()) {
+                int indiceABorrar = seleccion - 1;
+                String mensajeBorrado = mensajesDelUsuario.remove(indiceABorrar);
+                System.out.println("Borrando mensaje: " + mensajeBorrado);
+                synchronized (Servidor.class) {
+                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_MENSAJES, false))) {
+                        for (String linea : otrosMensajes) {
+                            writer.write(linea);
+                            writer.newLine();
+                        }
+                        for (String linea : mensajesDelUsuario) {
+                            writer.write(linea);
+                            writer.newLine();
+                        }
+                    }
+                }
+                escritor.println("Mensaje borrado exitosamente.");
+
+            } else {
+                escritor.println("Número fuera de rango. Operación cancelada.");
+            }
+        } catch (NumberFormatException e) {
+            escritor.println("Entrada no válida. Por favor ingrese un número. Operación cancelada.");
+        }
     }
 
 private static boolean validPassword(String contrasena) {
