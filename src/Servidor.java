@@ -122,7 +122,7 @@ private static void menu(Socket cliente) {
                 String linea;
                 while ((linea = reader.readLine()) != null) {
                     String[] partes = linea.split(":", 3);
-                    if (partes.length == 3 && partes[0].equals(usuario)) {
+                    if (partes.length == 3 && (partes[0].equals(usuario) || partes[1].equals(usuario))) {
                         mensajesDelUsuario.add(linea);
                     } else {
                         otrosMensajes.add(linea);
@@ -280,10 +280,7 @@ private static void mostrarUsuariosRegistrados(PrintWriter escritor) {
                 int contador = 0;
                 while ((linea = reader.readLine()) != null) {
                     String[] partes = linea.split(":", 3);
-                    if (partes.length == 3 && partes[0].equals(usuario)) {
-                        escritor.println("De [" + partes[1] + "]: " + partes[2]);
-                        contador++;
-                    }
+                    if (partes.length == 3 && partes[0].equals(usuario))
                 }
                 if (contador == 0) {
                     escritor.println("No tienes mensajes nuevos.");
