@@ -112,6 +112,41 @@ private static void menu(Socket cliente) {
     }
 }
 
+    private static void borrarTodosLosMensajes(String usuario, BufferedReader lector, PrintWriter escritor) throws IOException {
+        escritor.println("¿Estás seguro de que deseas borrar TODOS tus mensajes? Esta acción no se puede deshacer. [S/N]");
+
+        String confirmacion = lector.readLine();
+        if (confirmacion != null && "S".equalsIgnoreCase(confirmacion.trim())) {
+            List<String> mensajesGuardados = new ArrayList<>();
+            File archivo = new File(ARCHIVO_MENSAJES);
+
+            if (archivo.exists()) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(archivo))) {
+                    String linea;
+                    while ((linea = reader.readLine()) != null) {
+                        String[] partes = linea.split(":", 3);
+                        if (partes.length == 3 && !partes[0].equals(usuario) && !partes[1].equals(usuario)) {
+                            mensajesGuardados.add(linea);
+                        }
+                    }
+                }
+            }
+
+            synchronized (Servidor.class) {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_MENSAJES, false))) {
+                    for (String linea : mensajesGuardados) {
+                        writer.write(linea);
+                        writer.newLine();
+                    }
+                }
+            }
+            escritor.println("Todos tus mensajes han sido borrados.");
+            System.out.println("El usuario " + usuario + " ha borrado todos sus mensajes.");
+        } else {
+            escritor.println("Operación cancelada.");
+        }
+    }
+
     private static void borrarMensaje(String usuario, BufferedReader lector, PrintWriter escritor) throws IOException {
         List<String> mensajesDelUsuario = new ArrayList<>();
         List<String> otrosMensajes = new ArrayList<>();
@@ -280,7 +315,10 @@ private static void mostrarUsuariosRegistrados(PrintWriter escritor) {
                 int contador = 0;
                 while ((linea = reader.readLine()) != null) {
                     String[] partes = linea.split(":", 3);
-                    if (partes.length == 3 && partes[0].equals(usuario))
+                    if (partes.length == 3 && partes[0].equals(usuario)){
+                        escritor.println("De [" + partes[1] + "]: " + partes[2]);
+                        contador++;
+                    }
                 }
                 if (contador == 0) {
                     escritor.println("No tienes mensajes nuevos.");
