@@ -90,6 +90,9 @@ private static void menu(Socket cliente) {
                     borrarMensaje(usuarioAutenticado, lector, escritor);
                     break;
                 case "4":
+                    borrarTodosLosMensajes(usuarioAutenticado, lector, escritor);
+                    break;
+                case "5":
                     System.out.println("Cliente " + usuarioAutenticado + " ha cerrado sesión.");
                     cliente.close();
                     return;
