@@ -203,6 +203,9 @@ private static void menu(Socket cliente) {
             instruccion.append(". [C} Cancelar");
             escritor.println(instruccion.toString());
             escritor.println("FIN_LISTA_BORRAR");
+            String input = lector.readLine();
+            if(input == null) return;
+            input = input.trim();
 
             String seleccionStr = lector.readLine();
             try {
