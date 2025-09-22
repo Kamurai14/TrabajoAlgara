@@ -217,12 +217,11 @@ private static void menu(Socket cliente) {
             if("C".equalsIgnoreCase(input)){
                 escritor.println("Operacion cancelada.");
             }
-            String seleccionStr = lector.readLine();
             try {
-                int seleccion = Integer.parseInt(seleccionStr);
-                if (seleccion > 0 && seleccion <= mensajesDelUsuario.size()) {
-                    int indiceABorrar = seleccion - 1;
-                    String mensajeBorrado = mensajesDelUsuario.remove(indiceABorrar);
+                int seleccionEnPagina = Integer.parseInt(input);
+                if (seleccionEnPagina > 0 && seleccionEnPagina <= (fin-inicio)) {
+                    int indiceGlobal = inicio + seleccionEnPagina - 1;
+                    String mensajeBorrado = mensajesDelUsuario.remove(indiceGlobal);
                     System.out.println("Borrando mensaje: " + mensajeBorrado);
                     synchronized (Servidor.class) {
                         try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_MENSAJES, false))) {
@@ -237,7 +236,7 @@ private static void menu(Socket cliente) {
                         }
                     }
                     escritor.println("Mensaje borrado exitosamente.");
-
+                    return;
                 } else {
                     escritor.println("Número fuera de rango. Operación cancelada.");
                 }
