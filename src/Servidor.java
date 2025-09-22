@@ -206,7 +206,17 @@ private static void menu(Socket cliente) {
             String input = lector.readLine();
             if(input == null) return;
             input = input.trim();
-
+            if("S".equalsIgnoreCase(input) && paginaActual < totalPaginas){
+                paginaActual++;
+                continue;
+            }
+            if("A".equalsIgnoreCase(input) && paginaActual > 1){
+                paginaActual--;
+                continue;
+            }
+            if("C".equalsIgnoreCase(input)){
+                escritor.println("Operacion cancelada.");
+            }
             String seleccionStr = lector.readLine();
             try {
                 int seleccion = Integer.parseInt(seleccionStr);
