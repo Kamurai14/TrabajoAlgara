@@ -175,42 +175,46 @@ private static void menu(Socket cliente) {
 
         int tamanoPagina = 10;
         int totalMensajes = mensajesDelUsuario.size();
-        int totalPaginas = (int)Math.ceil((double)totalMensajes/tamanoPagina);
+        int totalPaginas = (int) Math.ceil((double) totalMensajes / tamanoPagina);
         int paginaActual = 1;
 
-        escritor.println("--- Elige que mensaje quieres borrar ---");
-        for (int i = 0; i < mensajesDelUsuario.size(); i++) {
-            String[] partes = mensajesDelUsuario.get(i).split(":", 3);
-            escritor.println((i + 1) + ". De [" + partes[1] + "]: " + partes[2]);
-        }
-        escritor.println("FIN_LISTA_BORRAR");
+        while (true) {
+            escritor.println("--- Elige que mensaje quieres borrar (Página " + paginaActual + "/" + totalPaginas + ") ---");
+            int inicio = (paginaActual - 1) * tamanoPagina;
+            int fin = Math.min(inicio + tamanoPagina, totalMensajes);
+            for (int i = 0; i < mensajesDelUsuario.size(); i++) {
+                String[] partes = mensajesDelUsuario.get(i).split(":", 3);
+                escritor.println((i + 1) + ". De [" + partes[1] + "]: " + partes[2]);
+            }
+            escritor.println("FIN_LISTA_BORRAR");
 
-        String seleccionStr = lector.readLine();
-        try {
-            int seleccion = Integer.parseInt(seleccionStr);
-            if (seleccion > 0 && seleccion <= mensajesDelUsuario.size()) {
-                int indiceABorrar = seleccion - 1;
-                String mensajeBorrado = mensajesDelUsuario.remove(indiceABorrar);
-                System.out.println("Borrando mensaje: " + mensajeBorrado);
-                synchronized (Servidor.class) {
-                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_MENSAJES, false))) {
-                        for (String linea : otrosMensajes) {
-                            writer.write(linea);
-                            writer.newLine();
-                        }
-                        for (String linea : mensajesDelUsuario) {
-                            writer.write(linea);
-                            writer.newLine();
+            String seleccionStr = lector.readLine();
+            try {
+                int seleccion = Integer.parseInt(seleccionStr);
+                if (seleccion > 0 && seleccion <= mensajesDelUsuario.size()) {
+                    int indiceABorrar = seleccion - 1;
+                    String mensajeBorrado = mensajesDelUsuario.remove(indiceABorrar);
+                    System.out.println("Borrando mensaje: " + mensajeBorrado);
+                    synchronized (Servidor.class) {
+                        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_MENSAJES, false))) {
+                            for (String linea : otrosMensajes) {
+                                writer.write(linea);
+                                writer.newLine();
+                            }
+                            for (String linea : mensajesDelUsuario) {
+                                writer.write(linea);
+                                writer.newLine();
+                            }
                         }
                     }
-                }
-                escritor.println("Mensaje borrado exitosamente.");
+                    escritor.println("Mensaje borrado exitosamente.");
 
-            } else {
-                escritor.println("Número fuera de rango. Operación cancelada.");
+                } else {
+                    escritor.println("Número fuera de rango. Operación cancelada.");
+                }
+            } catch (NumberFormatException e) {
+                escritor.println("Entrada no válida. Por favor ingrese un número. Operación cancelada.");
             }
-        } catch (NumberFormatException e) {
-            escritor.println("Entrada no válida. Por favor ingrese un número. Operación cancelada.");
         }
     }
 
