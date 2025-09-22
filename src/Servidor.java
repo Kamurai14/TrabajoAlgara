@@ -193,6 +193,15 @@ private static void menu(Socket cliente) {
                 }
                 escritor.println((i - inicio + 1) + "." + prefijo + partes[2]);
             }
+            StringBuilder instruccion = new StringBuilder("Elige un mensaje (1-" + (fin-inicio) + ")");
+            if(paginaActual < totalPaginas){
+                instruccion.append(", [S] Siguiente");
+            }
+            if(paginaActual > 1){
+                instruccion.append(", [A] Anterior");
+            }
+            instruccion.append(". [C} Cancelar");
+            escritor.println(instruccion.toString());
             escritor.println("FIN_LISTA_BORRAR");
 
             String seleccionStr = lector.readLine();
