@@ -182,9 +182,16 @@ private static void menu(Socket cliente) {
             escritor.println("--- Elige que mensaje quieres borrar (Página " + paginaActual + "/" + totalPaginas + ") ---");
             int inicio = (paginaActual - 1) * tamanoPagina;
             int fin = Math.min(inicio + tamanoPagina, totalMensajes);
-            for (int i = 0; i < mensajesDelUsuario.size(); i++) {
+            for (int i = inicio; i < fin; i++) {
                 String[] partes = mensajesDelUsuario.get(i).split(":", 3);
-                escritor.println((i + 1) + ". De [" + partes[1] + "]: " + partes[2]);
+                String prefijo;
+                if (partes[0].equals(usuario)) {
+                    prefijo = "Para [" + partes[1] + "]: ";
+
+                } else {
+                    prefijo = "De [" + partes[1] + "]: ";
+                }
+                escritor.println((i - inicio + 1) + "." + prefijo + partes[2]);
             }
             escritor.println("FIN_LISTA_BORRAR");
 
