@@ -172,6 +172,12 @@ private static void menu(Socket cliente) {
             escritor.println("No tienes mensajes para borrar.");
             return;
         }
+
+        int tamanoPagina = 10;
+        int totalMensajes = mensajesDelUsuario.size();
+        int totalPaginas = (int)Math.ceil((double)totalMensajes/tamanoPagina);
+        int paginaActual = 1;
+
         escritor.println("--- Elige que mensaje quieres borrar ---");
         for (int i = 0; i < mensajesDelUsuario.size(); i++) {
             String[] partes = mensajesDelUsuario.get(i).split(":", 3);
