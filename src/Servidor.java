@@ -115,6 +115,10 @@ private static void menu(Socket cliente) {
     }
 }
 
+    private static void bloquearUsuario(String usuario, BufferedReader lector, PrintWriter escritor) throws  IOException{
+        escritor.println("¿Seguro que deseas bloquear a este usuario?");
+    }
+
     private static void borrarTodosLosMensajes(String usuario, BufferedReader lector, PrintWriter escritor) throws IOException {
         escritor.println("¿Estás seguro de que deseas borrar TODOS tus mensajes? Esta acción no se puede deshacer. [S/N]");
 
