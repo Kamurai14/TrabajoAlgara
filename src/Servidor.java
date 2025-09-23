@@ -115,8 +115,21 @@ private static void menu(Socket cliente) {
     }
 }
 
-    private static void bloquearUsuario(String usuario, BufferedReader lector, PrintWriter escritor) throws  IOException{
-        escritor.println("¿Seguro que deseas bloquear a este usuario?");
+    private static void bloquearUsuario(String usuarioBloqueador, BufferedReader lector, PrintWriter escritor) throws  IOException{
+        escritor.println("¿A qué usuario deseas bloquear?");
+        String usuarioABloquear = lector.readLine();
+
+        if(usuarioABloquear == null || usuarioABloquear.trim().isEmpty()){
+            escritor.println("Nombre de usuario invalido.");
+            return;
+        }
+        if(usuarioBloqueador.equals(usuarioBloqueador)){
+            escritor.println("No te puedes bloquear a ti mismo");
+            return;
+        }
+
+
+
     }
 
     private static void borrarTodosLosMensajes(String usuario, BufferedReader lector, PrintWriter escritor) throws IOException {
