@@ -137,11 +137,15 @@ private static void menu(Socket cliente) {
 
         synchronized (Servidor.class){
             try(BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_BLOQUEADOS, true))){
-
+            writer.write(usuarioBloqueador + ":" + usuarioABloquear);
+            writer.newLine();
+            escritor.println("Has bloqueado '" + usuarioABloquear + "' Exitosamente");
+            System.out.println("El usuario " + usuarioBloqueador + " bloqueó a '" + usuarioABloquear + "' exitosamente");
+            }catch (IOException e){
+                escritor.println("Error al intentar bloquear al usuario");
+                e.printStackTrace();
             }
         }
-
-
 
     }
 
