@@ -128,6 +128,15 @@ private static void menu(Socket cliente) {
             return;
         }
 
+        if(!verificarUsuarioExiste(usuarioABloquear)){
+            escritor.println("El usuario '" + usuarioABloquear + "' No existe");
+            return;
+        }
+
+        if(estaBloqueado(usuarioBloqueador,usuarioABloquear)){
+            escritor.println("Ya has bloqueado a este usuario.");
+            return;
+        }
 
 
     }
