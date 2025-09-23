@@ -9,6 +9,7 @@ import java.util.*;
 public class Servidor {
     private static final String ARCHIVO_USUARIOS = "usuarios.txt";
     private static final String ARCHIVO_MENSAJES = "mensajes.txt";
+    private static final String ARCHIVO_BLOQUEADOS = "bloqueados.txt";
 
     public static void main(String[] args) {
         try {
@@ -119,10 +120,6 @@ private static void menu(Socket cliente) {
         escritor.println("¿A qué usuario deseas bloquear?");
         String usuarioABloquear = lector.readLine();
 
-        if(usuarioABloquear == null || usuarioABloquear.trim().isEmpty()){
-            escritor.println("Nombre de usuario invalido.");
-            return;
-        }
         if(usuarioBloqueador.equals(usuarioBloqueador)){
             escritor.println("No te puedes bloquear a ti mismo");
             return;
@@ -137,6 +134,13 @@ private static void menu(Socket cliente) {
             escritor.println("Ya has bloqueado a este usuario.");
             return;
         }
+
+        synchronized (Servidor.class){
+            try(BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_BLOQUEADOS, true))){
+
+            }
+        }
+
 
 
     }
