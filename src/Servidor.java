@@ -417,8 +417,11 @@ private static void mostrarUsuariosRegistrados(PrintWriter escritor) {
                 while ((linea = reader.readLine()) != null) {
                     String[] partes = linea.split(":", 3);
                     if (partes.length == 3 && partes[0].equals(usuario)){
-                        escritor.println("De [" + partes[1] + "]: " + partes[2]);
-                        contador++;
+                        String remitente = partes[1];
+                        if(!estaBloqueado(usuario,remitente)) {
+                            escritor.println("De [" + partes[1] + "]: " + partes[2]);
+                            contador++;
+                        }
                     }
                 }
                 if (contador == 0) {
