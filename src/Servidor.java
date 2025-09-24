@@ -383,6 +383,10 @@ private static void mostrarUsuariosRegistrados(PrintWriter escritor) {
             escritor.println("Error: El usuario '" + destinatario + "' no existe.");
             return;
         }
+        if(estaBloqueado(remitente,destinatario)){
+            escritor.println("No puedes enviar mensajes a este usuario");
+            return;
+        }
 
         escritor.println("Escribe tu mensaje:");
         String mensaje = lector.readLine();
