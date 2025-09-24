@@ -155,6 +155,20 @@ public class Servidor {
     private static boolean estaBloqueado(String usuario1, String usuario2) throws IOException {
         File archivo = new File(ARCHIVO_BLOQUEADOS);
         if (!archivo.exists()) return false;
+
+        try(BufferedReader reader = new BufferedReader(new FileReader(archivo))){
+            String linea;
+            while((linea = reader.readLine()) != null){
+                String[] partes = linea.split(":");
+                if(partes.length == 2){
+                    if ((partes[0].equals(usuario1) && partes[1].equals(usuario2)) ||
+                    (partes[0].equals(usuario2) && partes[1].equals(usuario1))){
+                    return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static void borrarTodosLosMensajes(String usuario, BufferedReader lector, PrintWriter escritor) throws IOException {
