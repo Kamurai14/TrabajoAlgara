@@ -28,128 +28,133 @@ public class Servidor {
         }
     }
 
-private static void menu(Socket cliente) {
-    try (
-            PrintWriter escritor = new PrintWriter(cliente.getOutputStream(), true);
-            BufferedReader lector = new BufferedReader(new InputStreamReader(cliente.getInputStream()))
-    ) {
-        escritor.println("Bienvenido. ¿Deseas [1] Iniciar sesión, [2] Registrarte o [3] Ver usuarios registrados?");
-        String opcion = lector.readLine();
+    private static void menu(Socket cliente) {
+        try (
+                PrintWriter escritor = new PrintWriter(cliente.getOutputStream(), true);
+                BufferedReader lector = new BufferedReader(new InputStreamReader(cliente.getInputStream()))
+        ) {
+            escritor.println("Bienvenido. ¿Deseas [1] Iniciar sesión, [2] Registrarte o [3] Ver usuarios registrados?");
+            String opcion = lector.readLine();
 
-        String usuarioAutenticado = null;
+            String usuarioAutenticado = null;
 
-        if ("3".equals(opcion)) {
-            mostrarUsuariosRegistrados(escritor);
-            cliente.close();
-            return;
-        }
-
-        escritor.println("Usuario:");
-        String usuario = lector.readLine();
-        escritor.println("Contraseña:");
-        String contrasena = lector.readLine();
-
-        if ("1".equals(opcion)) {
-            if (verificarCredenciales(usuario, contrasena)) {
-                escritor.println("Autenticación exitosa");
-                usuarioAutenticado = usuario;
-            } else {
-                escritor.println("Credenciales inválidas");
+            if ("3".equals(opcion)) {
+                mostrarUsuariosRegistrados(escritor);
+                cliente.close();
+                return;
             }
-        } else if ("2".equals(opcion)) {
-            if (!validPassword(contrasena)) {
-                escritor.println("Contraseña no válida. Debe tener al menos 8 caracteres y no puede estar vacía.");
-            } else {
-                if (registrarUsuario(usuario, contrasena)) {
-                    escritor.println("Usuario registrado exitosamente");
+
+            escritor.println("Usuario:");
+            String usuario = lector.readLine();
+            escritor.println("Contraseña:");
+            String contrasena = lector.readLine();
+
+            if ("1".equals(opcion)) {
+                if (verificarCredenciales(usuario, contrasena)) {
+                    escritor.println("Autenticación exitosa");
                     usuarioAutenticado = usuario;
                 } else {
-                    escritor.println("El usuario ya existe");
+                    escritor.println("Credenciales inválidas");
+                }
+            } else if ("2".equals(opcion)) {
+                if (!validPassword(contrasena)) {
+                    escritor.println("Contraseña no válida. Debe tener al menos 8 caracteres y no puede estar vacía.");
+                } else {
+                    if (registrarUsuario(usuario, contrasena)) {
+                        escritor.println("Usuario registrado exitosamente");
+                        usuarioAutenticado = usuario;
+                    } else {
+                        escritor.println("El usuario ya existe");
+                    }
+                }
+            } else {
+                escritor.println("Opción no válida");
+            }
+
+            if (usuarioAutenticado == null) {
+                cliente.close();
+                return;
+            }
+
+            String opcionMenu;
+            while ((opcionMenu = lector.readLine()) != null) {
+                System.out.println("Opción recibida del cliente '" + usuarioAutenticado + "': '" + opcionMenu + "'");
+
+                switch (opcionMenu) {
+                    case "1":
+                        enviarMensaje(usuarioAutenticado, lector, escritor);
+                        break;
+                    case "2":
+                        leerMensajes(usuarioAutenticado, escritor);
+                        break;
+                    case "3":
+                        borrarMensaje(usuarioAutenticado, lector, escritor);
+                        break;
+                    case "4":
+                        borrarTodosLosMensajes(usuarioAutenticado, lector, escritor);
+                        break;
+                    case "5":
+                        bloquearUsuario(usuarioAutenticado, lector, escritor);
+                        break;
+                    case "6":
+                        System.out.println("Cliente " + usuarioAutenticado + " ha cerrado sesión.");
+                        cliente.close();
+                        return;
+                    default:
+                        escritor.println("Opción de menú no válida.");
+                        break;
                 }
             }
-        } else {
-            escritor.println("Opción no válida");
-        }
 
-        if (usuarioAutenticado == null) {
-            cliente.close();
-            return;
-        }
-
-        String opcionMenu;
-        while ((opcionMenu = lector.readLine()) != null) {
-            System.out.println("Opción recibida del cliente '" + usuarioAutenticado + "': '" + opcionMenu + "'");
-
-            switch (opcionMenu) {
-                case "1":
-                    enviarMensaje(usuarioAutenticado, lector, escritor);
-                    break;
-                case "2":
-                    leerMensajes(usuarioAutenticado, escritor);
-                    break;
-                case "3":
-                    borrarMensaje(usuarioAutenticado, lector, escritor);
-                    break;
-                case "4":
-                    borrarTodosLosMensajes(usuarioAutenticado, lector, escritor);
-                    break;
-                case "5":
-                    bloquearUsuario(usuarioAutenticado, lector, escritor);
-                    break;
-                case "6":
-                    System.out.println("Cliente " + usuarioAutenticado + " ha cerrado sesión.");
-                    cliente.close();
-                    return;
-                default:
-                    escritor.println("Opción de menú no válida.");
-                    break;
-            }
-        }
-
-    } catch (IOException e) {
-        System.out.println("Error con el cliente: " + e.getMessage());
-    } finally {
-        try {
-            if (cliente != null && !cliente.isClosed()) {
-                cliente.close();
-            }
         } catch (IOException e) {
-            System.out.println("Error al cerrar el socket del cliente: " + e.getMessage());
+            System.out.println("Error con el cliente: " + e.getMessage());
+        } finally {
+            try {
+                if (cliente != null && !cliente.isClosed()) {
+                    cliente.close();
+                }
+            } catch (IOException e) {
+                System.out.println("Error al cerrar el socket del cliente: " + e.getMessage());
+            }
         }
     }
-}
 
-    private static void bloquearUsuario(String usuarioBloqueador, BufferedReader lector, PrintWriter escritor) throws  IOException{
+    private static void bloquearUsuario(String usuarioBloqueador, BufferedReader lector, PrintWriter escritor) throws IOException {
         escritor.println("¿A qué usuario deseas bloquear?");
         String usuarioABloquear = lector.readLine();
 
-        if(usuarioBloqueador.equals(usuarioBloqueador)){
+        if (usuarioBloqueador.equals(usuarioBloqueador)) {
             escritor.println("No te puedes bloquear a ti mismo");
             return;
         }
 
-        if(!verificarUsuarioExiste(usuarioABloquear)){
+        if (!verificarUsuarioExiste(usuarioABloquear)) {
             escritor.println("El usuario '" + usuarioABloquear + "' No existe");
             return;
         }
 
-        if(estaBloqueado(usuarioBloqueador,usuarioABloquear)){
+        if (estaBloqueado(usuarioBloqueador, usuarioABloquear)) {
             escritor.println("Ya has bloqueado a este usuario.");
             return;
         }
 
-        synchronized (Servidor.class){
-            try(BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_BLOQUEADOS, true))){
-            writer.write(usuarioBloqueador + ":" + usuarioABloquear);
-            writer.newLine();
-            escritor.println("Has bloqueado '" + usuarioABloquear + "' Exitosamente");
-            System.out.println("El usuario " + usuarioBloqueador + " bloqueó a '" + usuarioABloquear + "' exitosamente");
-            }catch (IOException e){
+        synchronized (Servidor.class) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_BLOQUEADOS, true))) {
+                writer.write(usuarioBloqueador + ":" + usuarioABloquear);
+                writer.newLine();
+                escritor.println("Has bloqueado '" + usuarioABloquear + "' Exitosamente");
+                System.out.println("El usuario " + usuarioBloqueador + " bloqueó a '" + usuarioABloquear + "' exitosamente");
+            } catch (IOException e) {
                 escritor.println("Error al intentar bloquear al usuario");
                 e.printStackTrace();
             }
         }
 
+    }
+
+    private static boolean estaBloqueado(String usuario1, String usuario2) throws IOException {
+        File archivo = new File(ARCHIVO_BLOQUEADOS);
+        if (!archivo.exists()) return false;
     }
 
     private static void borrarTodosLosMensajes(String usuario, BufferedReader lector, PrintWriter escritor) throws IOException {
