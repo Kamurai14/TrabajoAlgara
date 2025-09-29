@@ -4,6 +4,9 @@ import java.io.InputStreamReader;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class Servidor {
@@ -16,6 +19,7 @@ public class Servidor {
 
 
     public static void main(String[] args) {
+        new File(DIRECTORIO_ARCHIVOS).mkdirs();
         try {
             ServerSocket serverSocket = new ServerSocket(8080);
             System.out.println("Servidor listo. Esperando cliente...");
@@ -67,6 +71,7 @@ public class Servidor {
                     if (registrarUsuario(usuario, contrasena)) {
                         escritor.println("Usuario registrado exitosamente");
                         usuarioAutenticado = usuario;
+                        new File(DIRECTORIO_ARCHIVOS + usuario).mkdirs();
                     } else {
                         escritor.println("El usuario ya existe");
                     }
@@ -79,7 +84,7 @@ public class Servidor {
                 cliente.close();
                 return;
             }
-
+            notificarPeticiones(usuarioAutenticado, escritor);
             String opcionMenu;
             while ((opcionMenu = lector.readLine()) != null) {
                 System.out.println("Opción recibida del cliente '" + usuarioAutenticado + "': '" + opcionMenu + "'");
@@ -101,6 +106,18 @@ public class Servidor {
                         bloquearUsuario(usuarioAutenticado, lector, escritor);
                         break;
                     case "6":
+                        subirArchivo(usuarioAutenticado, lector, escritor);
+                    break;
+                    case "7":
+                        solicitarVerArchivos(usuarioAutenticado, lector, escritor);
+                    break;
+                    case "8":
+                        revisarPeticiones(usuarioAutenticado, lector, escritor);
+                    break;
+                    case "9":
+                        descargarArchivoAprobado(usuarioAutenticado, lector, escritor);
+                    break;
+                    case "10":
                         System.out.println("Cliente " + usuarioAutenticado + " ha cerrado sesión.");
                         cliente.close();
                         return;
@@ -120,6 +137,37 @@ public class Servidor {
             } catch (IOException e) {
                 System.out.println("Error al cerrar el socket del cliente: " + e.getMessage());
             }
+        }
+    }
+
+    private static void subirArchivo(String usuario, BufferedReader lector, PrintWriter escritor) throws IOException {
+        escritor.println("Nombre del archivo a subir (ej: mi_documento.txt):");
+        String nombreArchivo = lector.readLine();
+        if (nombreArchivo == null || nombreArchivo.trim().isEmpty() || nombreArchivo.contains(":")) {
+            escritor.println("Nombre de archivo no válido.");
+            return;
+        }
+
+        escritor.println("Pega el contenido del archivo aquí y envía una línea vacía para finalizar:");
+        StringBuilder contenido = new StringBuilder();
+        String linea;
+        while ((linea = lector.readLine()) != null && !linea.isEmpty()) {
+            contenido.append(linea).append(System.lineSeparator());
+        }
+
+        Path rutaArchivo = Paths.get(DIRECTORIO_ARCHIVOS, usuario, nombreArchivo);
+        try {
+            Files.write(rutaArchivo, contenido.toString().getBytes());
+            // Registrar el archivo en el registro general
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_REGISTRO_DE_ARCHIVOS, true))) {
+                writer.write(usuario + ":" + nombreArchivo);
+                writer.newLine();
+            }
+            escritor.println("Archivo subido exitosamente.");
+            System.out.println("Usuario " + usuario + " subió el archivo " + nombreArchivo);
+        } catch (IOException e) {
+            escritor.println("Error al guardar el archivo en el servidor.");
+            e.printStackTrace();
         }
     }
 
