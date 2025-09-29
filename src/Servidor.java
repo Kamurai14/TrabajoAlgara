@@ -10,6 +10,10 @@ public class Servidor {
     private static final String ARCHIVO_USUARIOS = "usuarios.txt";
     private static final String ARCHIVO_MENSAJES = "mensajes.txt";
     private static final String ARCHIVO_BLOQUEADOS = "bloqueados.txt";
+    private static final String ARCHIVO_REGISTRO_DE_ARCHIVOS = "registro_archivos.txt";
+    private static final String ARCHIVO_PETICIONES = "peticiones.txt";
+    private static final String DIRECTORIO_ARCHIVOS = "server_files/";
+
 
     public static void main(String[] args) {
         try {
