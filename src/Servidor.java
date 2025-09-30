@@ -112,12 +112,15 @@ public class Servidor {
                         solicitarVerArchivos(usuarioAutenticado, lector, escritor);
                     break;
                     case "8":
+                        solicitarDescargaArchivo(usuarioAutenticado, lector, escritor); // Llamada a la nueva función
+                        break;
+                    case "9":
                         revisarPeticiones(usuarioAutenticado, lector, escritor);
                     break;
-                    case "9":
+                    case "10":
                         descargarArchivoAprobado(usuarioAutenticado, lector, escritor);
                     break;
-                    case "10":
+                    case "11":
                         System.out.println("Cliente " + usuarioAutenticado + " ha cerrado sesión.");
                         cliente.close();
                         return;
@@ -314,7 +317,6 @@ public class Servidor {
             escritor.println("Nombre de archivo no válido.");
             return;
         }
-
         solicitarDescarga(solicitante, propietario, archivo, escritor);
     }
 
