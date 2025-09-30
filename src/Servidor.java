@@ -158,7 +158,6 @@ public class Servidor {
         Path rutaArchivo = Paths.get(DIRECTORIO_ARCHIVOS, usuario, nombreArchivo);
         try {
             Files.write(rutaArchivo, contenido.toString().getBytes());
-            // Registrar el archivo en el registro general
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_REGISTRO_DE_ARCHIVOS, true))) {
                 writer.write(usuario + ":" + nombreArchivo);
                 writer.newLine();
@@ -168,6 +167,27 @@ public class Servidor {
         } catch (IOException e) {
             escritor.println("Error al guardar el archivo en el servidor.");
             e.printStackTrace();
+        }
+    }
+
+    private static void solicitarVerArchivos(String solicitante, BufferedReader lector, PrintWriter escritor) throws IOException {
+        escritor.println("¿De qué usuario deseas ver la lista de archivos?");
+        String propietario = lector.readLine();
+
+        if (solicitante.equals(propietario)) {
+            escritor.println("Puedes ver tus propios archivos listándolos localmente.");
+            return;
+        }
+        if (!verificarUsuarioExiste(propietario)) {
+            escritor.println("El usuario '" + propietario + "' no existe.");
+            return;
+        }
+
+        String peticion = "VER_ARCHIVOS:" + solicitante + ":" + propietario + "::PENDIENTE";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_PETICIONES, true))) {
+            writer.write(peticion);
+            writer.newLine();
+            escritor.println("Solicitud enviada a '" + propietario + "'. Recibirás un mensaje cuando responda.");
         }
     }
 
