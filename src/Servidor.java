@@ -182,7 +182,6 @@ public class Servidor {
             escritor.println("El usuario '" + propietario + "' no existe.");
             return;
         }
-
         String peticion = "VER_ARCHIVOS:" + solicitante + ":" + propietario + "::PENDIENTE";
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_PETICIONES, true))) {
             writer.write(peticion);
@@ -190,6 +189,97 @@ public class Servidor {
             escritor.println("Solicitud enviada a '" + propietario + "'. Recibirás un mensaje cuando responda.");
         }
     }
+
+    private static void revisarPeticiones(String usuario, BufferedReader lector, PrintWriter escritor) throws IOException {
+        List<String> peticionesPendientes = new ArrayList<>();
+        List<String> otrasPeticiones = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(ARCHIVO_PETICIONES))) {
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                String[] partes = linea.split(":", 5);
+                if (partes.length == 5 && partes[2].equals(usuario) && partes[4].equals("PENDIENTE")) {
+                    peticionesPendientes.add(linea);
+                } else {
+                    otrasPeticiones.add(linea);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            escritor.println("No hay peticiones.");
+            return;
+        }
+
+        if (peticionesPendientes.isEmpty()) {
+            escritor.println("No tienes peticiones pendientes.");
+            return;
+        }
+
+        escritor.println("--- Peticiones Pendientes ---");
+        for (int i = 0; i < peticionesPendientes.size(); i++) {
+            String[] partes = peticionesPendientes.get(i).split(":", 5);
+            if (partes[0].equals("VER_ARCHIVOS")) {
+                escritor.println((i + 1) + ". " + partes[1] + " quiere ver tu lista de archivos.");
+            } else if (partes[0].equals("DESCARGAR_ARCHIVO")) {
+                escritor.println((i + 1) + ". " + partes[1] + " quiere descargar tu archivo '" + partes[3] + "'.");
+            }
+        }
+        escritor.println("Elige una petición para responder, o 'C' para cancelar.");
+        escritor.println("FIN_PETICIONES");
+
+        String seleccionStr = lector.readLine();
+        if ("C".equalsIgnoreCase(seleccionStr)) {
+            escritor.println("Operación cancelada.");
+            return;
+        }
+
+        try {
+            int sel = Integer.parseInt(seleccionStr) - 1;
+            if (sel >= 0 && sel < peticionesPendientes.size()) {
+                String peticionSeleccionada = peticionesPendientes.get(sel);
+                String[] partes = peticionSeleccionada.split(":", 5);
+                String solicitante = partes[1];
+                String tipo = partes[0];
+                String detalles = partes[3];
+
+                escritor.println("¿[A]probar o [D]enegar esta petición?");
+                String respuesta = lector.readLine();
+
+                if ("A".equalsIgnoreCase(respuesta)) {
+                    // Actualizar petición a APROBADA
+                    peticionesPendientes.set(sel, peticionSeleccionada.replace("PENDIENTE", "APROBADA"));
+                    escritor.println("Petición aprobada.");
+
+                    // Notificar al solicitante
+                    if (tipo.equals("VER_ARCHIVOS")) {
+                        String listaArchivos = obtenerListaArchivos(usuario);
+                        enviarMensajeSistema(solicitante, "Tu solicitud para ver los archivos de " + usuario + " fue APROBADA. Archivos: " + (listaArchivos.isEmpty() ? "Ninguno" : listaArchivos));
+                    } else if (tipo.equals("DESCARGAR_ARCHIVO")) {
+                        enviarMensajeSistema(solicitante, "Tu solicitud para descargar '" + detalles + "' de " + usuario + " fue APROBADA. Ve al menú de descargas.");
+                    }
+
+                } else {
+                    // Actualizar petición a DENEGADA
+                    peticionesPendientes.set(sel, peticionSeleccionada.replace("PENDIENTE", "DENEGADA"));
+                    escritor.println("Petición denegada.");
+                    enviarMensajeSistema(solicitante, "Tu solicitud para " + tipo + " de " + usuario + " fue DENEGADA.");
+                }
+
+                // Reescribir el archivo de peticiones
+                otrasPeticiones.addAll(peticionesPendientes);
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_PETICIONES, false))) {
+                    for (String p : otrasPeticiones) {
+                        writer.write(p);
+                        writer.newLine();
+                    }
+                }
+            } else {
+                escritor.println("Selección no válida.");
+            }
+        } catch (NumberFormatException e) {
+            escritor.println("Entrada no válida.");
+        }
+    }
+
 
     private static void bloquearUsuario(String usuarioBloqueador, BufferedReader lector, PrintWriter escritor) throws IOException {
         escritor.println("¿A qué usuario deseas bloquear?");
