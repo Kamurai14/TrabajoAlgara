@@ -300,6 +300,24 @@ public class Servidor {
         }
     }
 
+    private static void solicitarDescargaArchivo(String solicitante, BufferedReader lector, PrintWriter escritor) throws IOException {
+        escritor.println("¿De qué usuario deseas solicitar un archivo?");
+        String propietario = lector.readLine();
+        if (propietario == null || propietario.trim().isEmpty()) {
+            escritor.println("Nombre de usuario no válido.");
+            return;
+        }
+
+        escritor.println("¿Qué nombre de archivo deseas solicitar?");
+        String archivo = lector.readLine();
+        if (archivo == null || archivo.trim().isEmpty()) {
+            escritor.println("Nombre de archivo no válido.");
+            return;
+        }
+
+        solicitarDescarga(solicitante, propietario, archivo, escritor);
+    }
+
     private static void descargarArchivoAprobado(String usuario, BufferedReader lector, PrintWriter escritor) throws IOException {
         List<String> archivosAprobados = new ArrayList<>();
         try(BufferedReader reader = new BufferedReader(new FileReader(ARCHIVO_PETICIONES))){
