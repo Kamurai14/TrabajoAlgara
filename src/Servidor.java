@@ -390,6 +390,13 @@ public class Servidor {
         return String.join(", ", archivos);
     }
 
+    private static void enviarMensajeSistema(String destinatario, String mensaje) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_MENSAJES, true))) {
+            writer.write(destinatario + ":[Servidor]:" + mensaje);
+            writer.newLine();
+        }
+    }
+
     private static void bloquearUsuario(String usuarioBloqueador, BufferedReader lector, PrintWriter escritor) throws IOException {
         escritor.println("¿A qué usuario deseas bloquear?");
         String usuarioABloquear = lector.readLine();
