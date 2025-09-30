@@ -370,8 +370,24 @@ public class Servidor {
                 escritor.println("NOTIFICACION: Tienes " + contador + " peticion(es) pendiente(s). Revisa el menú de peticiones.");
             }
         } catch (IOException e) {
-            // No hay archivo de peticiones, no hay nada que notificar.
+
         }
+    }
+
+    private static String obtenerListaArchivos(String usuario) {
+        List<String> archivos = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(ARCHIVO_REGISTRO_DE_ARCHIVOS))) {
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                String[] partes = linea.split(":", 2);
+                if (partes.length == 2 && partes[0].equals(usuario)) {
+                    archivos.add(partes[1]);
+                }
+            }
+        } catch (IOException e) {
+            return "";
+        }
+        return String.join(", ", archivos);
     }
 
     private static void bloquearUsuario(String usuarioBloqueador, BufferedReader lector, PrintWriter escritor) throws IOException {
