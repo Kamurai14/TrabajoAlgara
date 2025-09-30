@@ -245,11 +245,9 @@ public class Servidor {
                 String respuesta = lector.readLine();
 
                 if ("A".equalsIgnoreCase(respuesta)) {
-                    // Actualizar petición a APROBADA
                     peticionesPendientes.set(sel, peticionSeleccionada.replace("PENDIENTE", "APROBADA"));
                     escritor.println("Petición aprobada.");
 
-                    // Notificar al solicitante
                     if (tipo.equals("VER_ARCHIVOS")) {
                         String listaArchivos = obtenerListaArchivos(usuario);
                         enviarMensajeSistema(solicitante, "Tu solicitud para ver los archivos de " + usuario + " fue APROBADA. Archivos: " + (listaArchivos.isEmpty() ? "Ninguno" : listaArchivos));
@@ -258,13 +256,11 @@ public class Servidor {
                     }
 
                 } else {
-                    // Actualizar petición a DENEGADA
                     peticionesPendientes.set(sel, peticionSeleccionada.replace("PENDIENTE", "DENEGADA"));
                     escritor.println("Petición denegada.");
                     enviarMensajeSistema(solicitante, "Tu solicitud para " + tipo + " de " + usuario + " fue DENEGADA.");
                 }
 
-                // Reescribir el archivo de peticiones
                 otrasPeticiones.addAll(peticionesPendientes);
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_PETICIONES, false))) {
                     for (String p : otrasPeticiones) {
@@ -277,6 +273,30 @@ public class Servidor {
             }
         } catch (NumberFormatException e) {
             escritor.println("Entrada no válida.");
+        }
+    }
+
+    private static void solicitarDescarga(String solicitante, String propietario, String archivo, PrintWriter escritor) throws IOException {
+        boolean archivoValido = false;
+        try(BufferedReader reader = new BufferedReader(new FileReader(ARCHIVO_REGISTRO_DE_ARCHIVOS))){
+            String linea;
+            while((linea = reader.readLine()) != null){
+                if(linea.equals(propietario + ":" + archivo)){
+                    archivoValido = true;
+                    break;
+                }
+            }
+        }
+        if(!archivoValido){
+            escritor.println("El usuario '" + propietario + "' no tiene un archivo llamado '" + archivo + "'.");
+            return;
+        }
+
+        String peticion = "DESCARGAR_ARCHIVO:" + solicitante + ":" + propietario + ":" + archivo + ":PENDIENTE";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARCHIVO_PETICIONES, true))) {
+            writer.write(peticion);
+            writer.newLine();
+            escritor.println("Solicitud de descarga para '" + archivo + "' enviada a '" + propietario + "'.");
         }
     }
 
