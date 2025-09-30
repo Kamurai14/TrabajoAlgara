@@ -300,6 +300,79 @@ public class Servidor {
         }
     }
 
+    private static void descargarArchivoAprobado(String usuario, BufferedReader lector, PrintWriter escritor) throws IOException {
+        List<String> archivosAprobados = new ArrayList<>();
+        try(BufferedReader reader = new BufferedReader(new FileReader(ARCHIVO_PETICIONES))){
+            String linea;
+            while((linea = reader.readLine()) != null){
+                String[] partes = linea.split(":", 5);
+                if(partes.length == 5 && partes[0].equals("DESCARGAR_ARCHIVO") && partes[1].equals(usuario) && partes[4].equals("APROBADA")){
+                    archivosAprobados.add(partes[2] + ":" + partes[3]); // propietario:archivo
+                }
+            }
+        } catch (FileNotFoundException e) {  }
+
+        if(archivosAprobados.isEmpty()){
+            escritor.println("No tienes archivos aprobados para descargar.");
+            return;
+        }
+
+        escritor.println("--- Archivos listos para descargar ---");
+        for(int i = 0; i < archivosAprobados.size(); i++){
+            String[] partes = archivosAprobados.get(i).split(":");
+            escritor.println((i+1) + ". " + partes[1] + " (de " + partes[0] + ")");
+        }
+        escritor.println("Elige un archivo para descargar o 'C' para cancelar.");
+        escritor.println("FIN_DESCARGAS");
+
+        String seleccionStr = lector.readLine();
+        if("C".equalsIgnoreCase(seleccionStr)) return;
+
+        try {
+            int sel = Integer.parseInt(seleccionStr) - 1;
+            if(sel >= 0 && sel < archivosAprobados.size()){
+                String[] info = archivosAprobados.get(sel).split(":");
+                String propietario = info[0];
+                String nombreArchivo = info[1];
+                Path rutaArchivo = Paths.get(DIRECTORIO_ARCHIVOS, propietario, nombreArchivo);
+
+                if(Files.exists(rutaArchivo)){
+                    byte[] bytesArchivo = Files.readAllBytes(rutaArchivo);
+                    String contenidoBase64 = Base64.getEncoder().encodeToString(bytesArchivo);
+
+                    escritor.println("START_DOWNLOAD:" + nombreArchivo);
+                    escritor.println(contenidoBase64);
+                    escritor.println("END_DOWNLOAD");
+
+                    System.out.println("Enviando archivo " + nombreArchivo + " a " + usuario);
+                } else {
+                    escritor.println("Error: El archivo ya no existe en el servidor.");
+                }
+            } else {
+                escritor.println("Selección no válida.");
+            }
+        } catch (NumberFormatException e) {
+            escritor.println("Entrada no válida.");
+        }
+    }
+
+    private static void notificarPeticiones(String usuario, PrintWriter escritor) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(ARCHIVO_PETICIONES))) {
+            String linea;
+            int contador = 0;
+            while ((linea = reader.readLine()) != null) {
+                String[] partes = linea.split(":", 5);
+                if (partes.length == 5 && partes[2].equals(usuario) && partes[4].equals("PENDIENTE")) {
+                    contador++;
+                }
+            }
+            if (contador > 0) {
+                escritor.println("NOTIFICACION: Tienes " + contador + " peticion(es) pendiente(s). Revisa el menú de peticiones.");
+            }
+        } catch (IOException e) {
+            // No hay archivo de peticiones, no hay nada que notificar.
+        }
+    }
 
     private static void bloquearUsuario(String usuarioBloqueador, BufferedReader lector, PrintWriter escritor) throws IOException {
         escritor.println("¿A qué usuario deseas bloquear?");
